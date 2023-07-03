@@ -21,7 +21,7 @@ import com.google.common.eventbus.EventBus;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
-import org.apache.shenyu.common.dto.convert.selector.DiscoveryUpstream;
+import org.apache.shenyu.common.dto.DiscoveryUpstreamData;
 import org.apache.shenyu.protocol.tcp.connection.Bridge;
 import org.apache.shenyu.protocol.tcp.connection.ConnectionContext;
 import org.apache.shenyu.protocol.tcp.connection.DefaultConnectionConfigProvider;
@@ -66,15 +66,10 @@ public class TcpBootstrapServer implements BootstrapServer {
         connectionContext.init(tcpServerConfiguration.getProps());
         LoopResources loopResources = LoopResources.create("shenyu-tcp-bootstrap-server", tcpServerConfiguration.getBossGroupThreadCount(),
                 tcpServerConfiguration.getWorkerGroupThreadCount(), true);
-
         TcpServer tcpServer = TcpServer.create()
-                .doOnChannelInit((connObserver, channel, remoteAddress) -> {
-                    channel.pipeline().addFirst(new LoggingHandler(LogLevel.INFO));
-                })
+                .doOnChannelInit((connObserver, channel, remoteAddress) -> channel.pipeline().addFirst(new LoggingHandler(LogLevel.INFO)))
                 .wiretap(true)
-                .observe((c, s) -> {
-                    LOG.info("connection={}|status={}", c, s);
-                })
+                .observe((c, s) -> LOG.info("connection={}|status={}", c, s))
                 //.childObserve(connectionObserver)
                 .doOnConnection(this::bridgeConnections)
                 .port(tcpServerConfiguration.getPort())
@@ -105,7 +100,7 @@ public class TcpBootstrapServer implements BootstrapServer {
      * @param removeList removeList
      */
     @Override
-    public void removeCommonUpstream(final List<DiscoveryUpstream> removeList) {
+    public void removeCommonUpstream(final List<DiscoveryUpstreamData> removeList) {
         eventBus.post(removeList);
     }
 
