@@ -40,7 +40,7 @@ public interface ShenyuDiscoveryService {
      * @param key      the key
      * @param listener the listener
      */
-    void watcher(String key, DataChangedEventListener listener) throws NacosException;
+    void watcher(String key, DataChangedEventListener listener);
 
     /**
      * unWatcher path.

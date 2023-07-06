@@ -18,13 +18,12 @@
 package org.apache.shenyu.discovery.nacos;
 
 import com.alibaba.nacos.api.PropertyKeyConst;
-import com.alibaba.nacos.api.config.ConfigFactory;
-import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingFactory;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.listener.AbstractEventListener;
 import com.alibaba.nacos.api.naming.listener.Event;
+import com.alibaba.nacos.api.naming.pojo.Instance;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -47,9 +46,9 @@ public class NacosDiscoveryService implements ShenyuDiscoveryService {
 
     private final Map<String, String> nodeDataMap = new HashMap<>();
 
-    private static final String NAMESPACE = "nacosNameSpace";
+    private final Map<String,String> cache = new HashMap<>();
 
-    private ConfigService configService;
+    private static final String NAMESPACE = "nacosNameSpace";
 
     private NamingService namingService;
 
@@ -60,7 +59,7 @@ public class NacosDiscoveryService implements ShenyuDiscoveryService {
         Properties nacosProperties = new Properties();
         nacosProperties.put(PropertyKeyConst.SERVER_ADDR, serverAddr);
 
-        nacosProperties.put(PropertyKeyConst.NAMESPACE, properties.getProperty(NAMESPACE));
+        nacosProperties.put(PropertyKeyConst.NAMESPACE, properties.getProperty(NAMESPACE, "default"));
         // the nacos authentication username
         nacosProperties.put(PropertyKeyConst.USERNAME, properties.getProperty(PropertyKeyConst.USERNAME, ""));
         // the nacos authentication password
@@ -70,7 +69,6 @@ public class NacosDiscoveryService implements ShenyuDiscoveryService {
         // secret key for namespace
         nacosProperties.put(PropertyKeyConst.SECRET_KEY, properties.getProperty(PropertyKeyConst.SECRET_KEY, ""));
         try {
-            this.configService = ConfigFactory.createConfigService(nacosProperties);
             this.namingService = NamingFactory.createNamingService(nacosProperties);
         } catch (NacosException e) {
             throw new ShenyuException(e);
@@ -95,11 +93,35 @@ public class NacosDiscoveryService implements ShenyuDiscoveryService {
     }
 
     @Override
+    public void unWatcher(String key) {
+        cache.remove(key);
+    }
+
+    @Override
     public void register(final String key, final String value) {
+        Instance instance = new Instance();
+        try {
+            instance.addMetadata(key,value);
+            namingService.registerInstance(key,instance);
+        }catch (Exception e) {
+            throw new ShenyuException(e);
+        }
     }
 
     @Override
     public String getData(final String key) {
-        return "";
+        return cache.get(key);
+    }
+
+    @Override
+    public void shutdown() {
+        try {
+            for (String key : cache.keySet()) {
+                cache.remove(key);
+            }
+            namingService.shutDown();
+        } catch (Exception e) {
+            throw new ShenyuException(e);
+        }
     }
 }

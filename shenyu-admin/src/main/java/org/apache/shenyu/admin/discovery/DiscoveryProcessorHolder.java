@@ -39,7 +39,7 @@ public class DiscoveryProcessorHolder {
     public DiscoveryProcessor chooseProcessor(final String mode) {
         if (DiscoveryMode.LOCAL.name().equalsIgnoreCase(mode)) {
             return localDiscoveryProcessor;
-        } else if (DiscoveryMode.ZOOKEEPER.name().equalsIgnoreCase(mode)) {
+        } else if (DiscoveryMode.ZOOKEEPER.name().equalsIgnoreCase(mode) || DiscoveryMode.NACOS.name().equalsIgnoreCase(mode)) {
             return defaultDiscoveryProcessor;
         } else {
             throw new NotImplementedException("shenyu discovery mode current didn't support " + mode);
