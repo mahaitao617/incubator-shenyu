@@ -60,10 +60,10 @@ shenyu:
       scheduledTime: 10
       nacosNameSpace: ShenyuRegisterCenter
   sync:
-#    websocket:
-#      enabled: true
-#      messageMaxSize: 10240
-#      allowOrigins: ws://localhost:9095;ws://localhost:9195;
+    websocket:
+      enabled: true
+      messageMaxSize: 10240
+      allowOrigins: ws://localhost:9095;ws://localhost:9195;
 #    apollo:
 #      meta: http://localhost:8080
 #      appId: shenyu
@@ -78,11 +78,11 @@ shenyu:
 #      connectionTimeout: 2000
 #      http:
 #        enabled: true
-      nacos:
-        url: localhost:8848
-        namespace: 1c10d748-af86-43b9-8265-75f487d20c6c
-        username:
-        password:
+#      nacos:
+#        url: localhost:8848
+#        namespace: test3
+#        username:
+#        password:
 #        acm:
 #          enabled: false
 #          endpoint: acm.aliyun.com

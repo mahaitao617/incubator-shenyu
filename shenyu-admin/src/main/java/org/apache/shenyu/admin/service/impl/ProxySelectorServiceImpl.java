@@ -198,7 +198,8 @@ public class ProxySelectorServiceImpl implements ProxySelectorService {
         if (proxySelectorMapper.insert(proxySelectorDO) > 0) {
             DiscoveryProcessor discoveryProcessor = discoveryProcessorHolder.chooseProcessor(proxySelectorAddDTO.getDiscovery().getDiscoveryType());
             DiscoveryDO discoveryDO;
-            String discoveryId;
+            String discoveryId = "1676540249462644736";
+            proxySelectorAddDTO.getDiscovery().setId(discoveryId);
             boolean fillDiscovery;
             if (StringUtils.hasLength(proxySelectorAddDTO.getDiscovery().getId())) {
                 discoveryDO = discoveryMapper.selectById(proxySelectorAddDTO.getDiscovery().getId());

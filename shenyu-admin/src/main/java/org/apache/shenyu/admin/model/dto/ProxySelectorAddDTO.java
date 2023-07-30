@@ -49,7 +49,7 @@ public class ProxySelectorAddDTO implements Serializable {
      * pluginName.
      */
     @NotBlank
-    private String pluginName;
+    private String pluginName = "TCP";
 
     /**
      * proxy forward port.

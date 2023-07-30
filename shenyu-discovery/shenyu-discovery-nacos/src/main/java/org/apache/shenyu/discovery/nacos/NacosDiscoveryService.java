@@ -23,8 +23,11 @@ import com.alibaba.nacos.api.naming.NamingFactory;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.listener.AbstractEventListener;
 import com.alibaba.nacos.api.naming.listener.Event;
+import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
@@ -44,9 +47,7 @@ public class NacosDiscoveryService implements ShenyuDiscoveryService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NacosDiscoveryService.class);
 
-    private final Map<String, String> nodeDataMap = new HashMap<>();
-
-    private final Map<String,String> cache = new HashMap<>();
+    private final Map<String, String> cache = new HashMap<>();
 
     private static final String NAMESPACE = "nacosNameSpace";
 
@@ -59,7 +60,7 @@ public class NacosDiscoveryService implements ShenyuDiscoveryService {
         Properties nacosProperties = new Properties();
         nacosProperties.put(PropertyKeyConst.SERVER_ADDR, serverAddr);
 
-        nacosProperties.put(PropertyKeyConst.NAMESPACE, properties.getProperty(NAMESPACE, "default"));
+        nacosProperties.put(PropertyKeyConst.NAMESPACE, properties.getProperty(NAMESPACE, "test3"));
         // the nacos authentication username
         nacosProperties.put(PropertyKeyConst.USERNAME, properties.getProperty(PropertyKeyConst.USERNAME, ""));
         // the nacos authentication password
@@ -81,43 +82,68 @@ public class NacosDiscoveryService implements ShenyuDiscoveryService {
             return;
         }
         try {
-            namingService.subscribe(key,new AbstractEventListener() {
+            namingService.subscribe(key, new AbstractEventListener() {
                 @Override
                 public void onEvent(Event event) {
+                    List<Instance> instances = ((NamingEvent) event).getInstances();
+                    System.out.println("dddddaffsawe");
 
                 }
             });
-        }catch (NacosException e) {
+        } catch (NacosException e) {
             throw new ShenyuException(e);
         }
     }
 
     @Override
     public void unWatcher(String key) {
-        cache.remove(key);
+        if (cache.containsKey(key)) {
+            cache.remove(key);
+        }
     }
 
     @Override
     public void register(final String key, final String value) {
         Instance instance = new Instance();
         try {
-            instance.addMetadata(key,value);
-            namingService.registerInstance(key,instance);
-        }catch (Exception e) {
+            instance.addMetadata(key, value);
+            namingService.registerInstance(key, instance);
+        } catch (Exception e) {
             throw new ShenyuException(e);
         }
     }
 
     @Override
-    public String getData(final String key) {
-        return cache.get(key);
+    public List<String> getRegisterData(String key) {
+        try {
+            List<String> datas = new ArrayList<>();
+            List<Instance> instances = namingService.selectInstances(key, true);
+            for (Instance instance : instances) {
+                datas.add(instance.getMetadata().get(key));
+            }
+            return datas;
+        } catch (Exception e) {
+            throw new ShenyuException(e);
+        }
+    }
+
+    @Override
+    public Boolean exits(String key) {
+        try {
+            List<Instance> instances = namingService.selectInstances(key, true);
+            return instances.size() > 0;
+        } catch (Exception e) {
+           return false;
+        }
     }
 
     @Override
     public void shutdown() {
         try {
             for (String key : cache.keySet()) {
-                cache.remove(key);
+                if (cache.containsKey(key)) {
+                    cache.remove(key);
+                }
             }
             namingService.shutDown();
         } catch (Exception e) {
